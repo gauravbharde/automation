@@ -4,26 +4,26 @@ on:
   workflow_dispatch:
     inputs:
       aws-region:
-        description: 'AWS region for DocumentDB'
+        description: 'AWS region'
         required: true
       cluster-id:
-        description: 'DocumentDB cluster identifier'
+        description: 'DocDB Cluster Identifier'
         required: true
       environment:
-        description: 'Environment (e.g., dev, staging, prod)'
+        description: 'Environment (e.g., dev, staging, regression, prod)'
         required: true
       release:
-        description: 'Release version or label'
+        description: 'Release Version'
         required: true
 
 jobs:
   snapshot:
-    runs-on: [self-hosted, aws-oidc]   # Targets your EC2 runner with label
+    runs-on: [self-hosted, aws-oidc]
     steps:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::YOUR_ACCOUNT_ID:role/GitHubOIDCRole
+          role-to-assume: arn:aws:iam::014562355322:role/GitHubOIDCRole
           aws-region: ${{ github.event.inputs.aws-region }}
 
       - name: Create DocumentDB snapshot
