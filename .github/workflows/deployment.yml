@@ -58,6 +58,13 @@ jobs:
             --db-cluster-snapshot-identifier $snapshot_name \
             --db-cluster-identifier ${{ github.event.inputs.cluster-id }}
 
+      - name: Wait until snapshot is available
+        run: |
+          echo "Waiting for snapshot: $snapshot_name"
+          aws rds wait db-cluster-snapshot-available \
+            --db-cluster-snapshot-identifier "$snapshot_name"
+          echo "Snapshot is now available!"
+
       - name: Verify snapshot status
         run: |
           echo "Checking status for: $snapshot_name"
@@ -65,10 +72,3 @@ jobs:
             --db-cluster-snapshot-identifier $snapshot_name \
             --query 'DBClusterSnapshots[0].[Status, PercentProgress]' \
             --output text
-
-      - name: Wait until snapshot is available
-        run: |
-          echo "Waiting for snapshot: $snapshot_name"
-          aws rds wait db-cluster-snapshot-available \
-            --db-cluster-snapshot-identifier "$snapshot_name"
-          echo "Snapshot is now available!"
