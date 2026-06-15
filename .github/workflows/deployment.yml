@@ -34,7 +34,7 @@ jobs:
         run: |
           date=$(date +'%Y%m%d-%H%M%S')
           release_format=$(echo "${{ github.event.inputs.release }}" | sed 's/[^a-zA-Z0-9-]/-/g')
-          snapshot_name="${{ github.event.inputs.environment }}-vip-before-${{ github.event.inputs.release }}-upgrade-${date}"
+          snapshot_name="${{ github.event.inputs.environment }}-vip-before-${release_format}-upgrade-${date}"
           echo "Creating snapshot: $snapshot_name"
           aws docdb create-db-cluster-snapshot \
             --db-cluster-snapshot-identifier $snapshot_name \
