@@ -35,7 +35,10 @@ jobs:
           date=$(date +'%Y%m%d-%H%M%S')
           release_format=$(echo "${{ github.event.inputs.release }}" | sed 's/[^a-zA-Z0-9-]/-/g')
           snapshot_name="${{ github.event.inputs.environment }}-vip-before-${release_format}-upgrade-${date}"
+          echo "snapshot_name=$snapshot_name" >> $GITHUB_ENV
           echo "Creating snapshot: $snapshot_name"
+         
+
           aws docdb create-db-cluster-snapshot \
             --db-cluster-snapshot-identifier $snapshot_name \
             --db-cluster-identifier ${{ github.event.inputs.cluster-id }}
@@ -48,3 +51,9 @@ jobs:
             --query 'DBClusterSnapshots[0].[Status, PercentProgress]' \
             --output text
 
+      - name: Wait until snapshot is available
+        run: |
+          echo "Waiting for snapshot: $snapshot_name"
+          aws docdb wait db-cluster-snapshot-available \
+            --db-cluster-snapshot-identifier "$snapshot_name"
+          echo "Snapshot is now available!"
