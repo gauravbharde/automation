@@ -38,13 +38,19 @@ jobs:
           fi
           echo "All LD components are operational. Proceeding for further deployment steps."
 
-      - name: Configure AWS credentials via OIDC
+      - name: Configure AWS credentials via OIDC (Dev account)
+        if: ${{ github.event.inputs.environment == 'regression' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ github.event.inputs.environment == 'regression' 
-             ?  'arn:aws:iam::014562355322:role/GitHubOIDCRole' 
-             :  'arn:aws:iam::014562355322:role/GitHubOIDCRole' 
-          }}
+          role-to-assume: arn:aws:iam::014562355322:role/GitHubOIDCRole
+          aws-region: ${{ github.event.inputs.aws-region }}
+          audience: sts.amazonaws.com
+
+      - name: Configure AWS credentials via OIDC (Prod account)
+        if: ${{ github.event.inputs.environment != 'regression' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::014562355322:role/GitHubOIDCRole
           aws-region: ${{ github.event.inputs.aws-region }}
           audience: sts.amazonaws.com
           
