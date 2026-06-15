@@ -9,28 +9,39 @@ on:
       cluster-id:
         description: 'DocumentDB cluster identifier'
         required: true
-      aws-profile:
-        description: 'AWS CLI profile name'
-        required: true
       environment:
-        description: 'Environment (e.g., regression, beta, staging or prod)'
+        description: 'Environment (e.g., dev, staging, prod)'
         required: true
       release:
-        description: 'Release version'
+        description: 'Release version or label'
         required: true
 
 jobs:
   snapshot:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, aws-oidc]   # Targets your EC2 runner with label
     steps:
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::YOUR_ACCOUNT_ID:role/GitHubOIDCRole
+          aws-region: ${{ github.event.inputs.aws-region }}
+
       - name: Create DocumentDB snapshot
+        id: create_snapshot
         run: |
           DATE=$(date +'%Y%m%d-%H%M%S')
           SNAPSHOT_NAME="${{ github.event.inputs.environment }}-vip-before-${{ github.event.inputs.release }}-upgrade-${DATE}"
+          echo "SNAPSHOT_NAME=$SNAPSHOT_NAME" >> $GITHUB_ENV
           echo "Creating snapshot: $SNAPSHOT_NAME"
-          aws --profile ${{ github.event.inputs.aws-profile }} \
-              --region ${{ github.event.inputs.aws-region }} \
-              docdb create-db-cluster-snapshot \
-              --db-cluster-snapshot-identifier $SNAPSHOT_NAME \
-              --db-cluster-identifier ${{ github.event.inputs.cluster-id }}
+          aws docdb create-db-cluster-snapshot \
+            --db-cluster-snapshot-identifier $SNAPSHOT_NAME \
+            --db-cluster-identifier ${{ github.event.inputs.cluster-id }}
+
+      - name: Verify snapshot status
+        run: |
+          echo "Checking status for: $SNAPSHOT_NAME"
+          aws docdb describe-db-cluster-snapshots \
+            --db-cluster-snapshot-identifier $SNAPSHOT_NAME \
+            --query 'DBClusterSnapshots[0].Status' \
+            --output text
 
