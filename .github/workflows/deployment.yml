@@ -32,19 +32,19 @@ jobs:
       - name: Create DocumentDB snapshot
         id: create_snapshot
         run: |
-          DATE=$(date +'%Y%m%d-%H%M%S')
-          SNAPSHOT_NAME="${{ github.event.inputs.environment }}-vip-before-${{ github.event.inputs.release }}-upgrade-${DATE}"
-          echo "SNAPSHOT_NAME=$SNAPSHOT_NAME" >> $GITHUB_ENV
-          echo "Creating snapshot: $SNAPSHOT_NAME"
+          date=$(date +'%Y%m%d-%H%M%S')
+          release_format=$(echo "${{ github.event.inputs.release }}" | sed 's/[^a-zA-Z0-9-]/-/g')
+          snapshot_name="${{ github.event.inputs.environment }}-vip-before-${{ github.event.inputs.release }}-upgrade-${date}"
+          echo "Creating snapshot: $snapshot_name"
           aws docdb create-db-cluster-snapshot \
-            --db-cluster-snapshot-identifier $SNAPSHOT_NAME \
+            --db-cluster-snapshot-identifier $snapshot_name \
             --db-cluster-identifier ${{ github.event.inputs.cluster-id }}
 
       - name: Verify snapshot status
         run: |
-          echo "Checking status for: $SNAPSHOT_NAME"
+          echo "Checking status for: $snapshot_name"
           aws docdb describe-db-cluster-snapshots \
-            --db-cluster-snapshot-identifier $SNAPSHOT_NAME \
-            --query 'DBClusterSnapshots[0].Status' \
+            --db-cluster-snapshot-identifier $snapshot_name \
+            --query 'DBClusterSnapshots[0].[Status, PercentProgress]' \
             --output text
 
