@@ -41,10 +41,9 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ 
-            github.event.inputs.environment == 'regression' 
-              && 'arn:aws:iam::014562355322:role/GitHubOIDCRole' 
-              || 'arn:aws:iam::014562355322:role/GitHubOIDCRole' 
+          role-to-assume: ${{ github.event.inputs.environment == 'regression' 
+             ?  'arn:aws:iam::014562355322:role/GitHubOIDCRole' 
+             :  'arn:aws:iam::014562355322:role/GitHubOIDCRole' 
           }}
           aws-region: ${{ github.event.inputs.aws-region }}
           audience: sts.amazonaws.com
