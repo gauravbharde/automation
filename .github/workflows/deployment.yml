@@ -54,6 +54,6 @@ jobs:
       - name: Wait until snapshot is available
         run: |
           echo "Waiting for snapshot: $snapshot_name"
-          aws docdb wait db-cluster-snapshot-available \
+          aws rds wait db-cluster-snapshot-available \
             --db-cluster-snapshot-identifier "$snapshot_name"
           echo "Snapshot is now available!"
