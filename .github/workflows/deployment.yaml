@@ -1,0 +1,32 @@
+name: DocumentDB One-Time Snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      aws-region:
+        description: 'AWS region for DocumentDB'
+        required: true
+        default: 'us-east-1'
+      cluster-id:
+        description: 'DocumentDB cluster identifier'
+        required: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.inputs.aws-region }}
+
+      - name: Create DocumentDB snapshot
+        run: |
+          SNAPSHOT_NAME="docdb-snapshot-$(date +'%Y%m%d-%H%M%S')"
+          echo "Creating snapshot: $SNAPSHOT_NAME"
+          aws docdb create-db-cluster-snapshot \
+            --db-cluster-snapshot-identifier $SNAPSHOT_NAME \
+            --db-cluster-identifier ${{ github.event.inputs.cluster-id }}
+
