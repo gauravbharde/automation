@@ -28,9 +28,7 @@ jobs:
           echo "Checking LaunchDarkly Components Status."
           status=$(curl -s https://status.launchdarkly.com/api/v2/components.json \
             | jq -r '.components[] | "\(.name): \(.status)"')
-
           echo "$status"
-
           operational_status=$(echo "$status" | awk -F': ' '{print $2}')
           if echo "$operational_status" | grep -qv '^operational$'; then      
             echo " One or more LD components are not operational at the momemnt. Aborting Deployment of vip release ${{ github.event.inputs.release }}."
