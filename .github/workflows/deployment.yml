@@ -32,7 +32,7 @@ jobs:
       - name: Create DocumentDB snapshot
         id: create_snapshot
         run: |
-          date=$(date +'%Y%m%d-%H%M%S')
+          date=$(date +'%Y%m%d)
           release_format=$(echo "${{ github.event.inputs.release }}" | sed 's/[^a-zA-Z0-9-]/-/g')
           snapshot_name="${{ github.event.inputs.environment }}-vip-before-${release_format}-upgrade-${date}"
           echo "snapshot_name=$snapshot_name" >> $GITHUB_ENV
