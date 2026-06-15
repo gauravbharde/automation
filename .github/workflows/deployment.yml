@@ -1,4 +1,4 @@
-name: DocumentDB One-Time Snapshot
+name: VIP Deployment
 
 on:
   workflow_dispatch:
@@ -23,6 +23,23 @@ jobs:
       id-token: write
       contents: read    
     steps:
+      - name: LaunchDarkly Status Check
+        run: |
+          echo "Checking LaunchDarkly Components Status."
+          status=$(curl -s https://status.launchdarkly.com/api/v2/components.json \
+            | jq -r '.components[] | "\(.name): \(.status)"')
+
+          echo "$status"
+
+          non_operational=$(echo "$status" | grep -vc "operational")
+
+          if [ "$non_operational" -ne 0 ]; then
+            echo " One or more LD components are not operational at the momemnt. Aborting Deployment of vip release ${{ github.event.inputs.release }}."
+            exit 1
+          fi
+
+          echo "All LD components are operational. Proceeding for further deployment steps."
+
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
