@@ -62,8 +62,6 @@ jobs:
           snapshot_name="${{ github.event.inputs.environment }}-vip-before-${release_format}-upgrade-${date}"
           echo "snapshot_name=$snapshot_name" >> $GITHUB_ENV
           echo "Creating snapshot: $snapshot_name"
-         
-
           aws docdb create-db-cluster-snapshot \
             --db-cluster-snapshot-identifier $snapshot_name \
             --db-cluster-identifier ${{ github.event.inputs.cluster-id }}
