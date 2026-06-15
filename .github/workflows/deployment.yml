@@ -31,13 +31,11 @@ jobs:
 
           echo "$status"
 
-          non_operational=$(echo "$status" | grep -vc "operational")
-
-          if [ "$non_operational" -ne 0 ]; then
+          operational_status=$(echo "$status" | awk -F': ' '{print $2}')
+          if echo "$operational_status" | grep -qv '^operational$'; then      
             echo " One or more LD components are not operational at the momemnt. Aborting Deployment of vip release ${{ github.event.inputs.release }}."
             exit 1
           fi
-
           echo "All LD components are operational. Proceeding for further deployment steps."
 
       - name: Configure AWS credentials via OIDC
